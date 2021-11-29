@@ -1,0 +1,48 @@
+
+# Header page
+header = dashboardHeader(title = "Method Comparison")
+
+# Side Menu
+sidebar = dashboardSidebar(sidebarMenu(
+                           menuItem("Introduction", tabName = "intro", icon = icon("question-circle-o")),
+                           menuItem("Data", tabName = "data", icon = icon("folder-open-o")),           
+                           menuItem("Comparison", tabName = "fit", icon = icon("clone")),           
+                           menuItem("About", tabName = "about", icon = icon("info-circle fa-lg"))           
+          ))
+# Body Page
+body = dashboardBody(tabItems(tabItem(tabName = "intro",
+                                      HTML("<a rel='license' href='http://creativecommons.org/licenses/by-nc/4.0/'><img alt='Creative Commons Licence' style='border-width:0' src='https://i.creativecommons.org/l/by-nc/4.0/88x31.png' /></a><br />This work is licensed under a <a rel='license' href='http://creativecommons.org/licenses/by-nc/4.0/'>Creative Commons Attribution-NonCommercial 4.0 International License</a>.")
+                                      ),
+                              tabItem(tabName = "data",
+                                      tabBox(title = "", id = "tab_data_upload",
+                                             tabPanel("Data Upload",
+                                                      fluidRow(column(3, selectInput("demo_files", label = "Example data", choices = data_list)),
+                                                               column(4, fileInput("upload_file", label = "Upload file", multiple = FALSE, accept = c(".xlsx", ".xls", ".txt", ".csv"))),
+                                                              ),
+                                                      fluidRow(column(DT::dataTableOutput("raw_data"),
+                                                                      width = 12))
+                                                      ),
+                                             tabPanel("Data Validation"))),
+                              
+                              tabItem(tabName = "fit",
+                                      box(title = "Method Comparison Parameters", status = "primary", solidHeader = TRUE, width = 12,
+                                          collapsible = T,collapsed = F,
+                                          fluidRow(column(2, selectInput("method_list", label = "Method Test Comparison", choices = c("Method Test 1"))))),
+                                      tabBox(title = "", id = "tab_fit", width = 12,
+                                             tabPanel("Regression", fluidRow(column(width=6, plotOutput("ols_reg")),
+                                                                             column(width=6, plotOutput("olsw_reg"))),
+                                                                    fluidRow(column(width=6, plotOutput("deming_reg")),
+                                                                             column(width=6, plotOutput("demingw_reg"))),
+                                                                    fluidRow(column(width=6, plotOutput("PB_reg")))),
+                                             tabPanel("Bland-Altman", plotOutput("bland_altman")),
+                                             tabPanel("Statistics")
+                                             )
+                                              
+                                      )
+          )
+)  
+## Deploy page
+dashboardPage(header, sidebar, body)        
+
+# box(title = "Testing", status = "primary", solidHeader = TRUE, width = 12,
+#     plotOutput("distPlot"),collapsible = T,collapsed = T)
