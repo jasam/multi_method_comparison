@@ -44,7 +44,7 @@ shinyServer(function(input, output, session) {
                                      initComplete = JS("function(settings, json) {",
                                                        "$(this.api().table().header()).css({'background-color': 'moccasin', 'color': '1c1b1b'});",
                                                         "}"),
-                                     columnDefs=list(list(className='dt-center',targets="_all"))),
+                                     columnDefs=list(list(className='dt-center',targets="_all")), searching = FALSE),
                                      filter = "top",
                                      selection = 'multiple',
                                      style = 'bootstrap',
@@ -405,16 +405,16 @@ shinyServer(function(input, output, session) {
         withMathJax(
             tags$img(src="method_comparison.PNG"),
             br(),
-            "It is the first step (loading the data) to carry out the study of the comparison of methods, there are two possibilities:",
+            "This option is the central axis of the solution, once the data is loaded it is possible to automatically obtain the comparison of the test methods (test_1..test_n) and see for each of them the result of the application it will be possible to filter for each trial test and see its particular results in 4 tabs:",
             br(),
             br(),
-            "1. Use the demo files which contain sample data to test the application, there are 3 possibilities: blood pressure, plasma and T4, these data were obtained from previous in vitro studies, with open data license and correspond with real world tests.",
+            "1. Summary: option that will allow you to dynamically view all regressions (Ordinary Least Squares, Weighted Ordinary Least Squares, Deming, Weighted Deming and Passing-Bablok) at the same time for comparison.",
             br(),
-            "2. It is possible to load your own file (comma separated format) and it must contain a column called: “reference” for the standard or gold standard method and at least 1 or more columns with the methods test that will be compared in the following way: test_1 (for method the first method), test_2 (for the second method), always following the pattern test_n (where the n indicates the # of the comparison method), for illustration you can review the demo data option.",
+            "2. Graphical evaluation: Each type of linear regression can be observed separately, it also includes the calculation of the correlation for each model.",
             br(),
+            "3. Statistics: Table that will present the values calculated by the models in how many sub-statistics such as: intercept, slope and intervals.",
             br(),
-            "It is possible that the file has data such as ids, specimen or any other product of the study, however, what should always be kept are the columns: reference and test_n.
-            Once the file has been loaded, it will be possible to have the data displayed in a table that lists all the study data, it is not mandatory, but it is recommended to have at least 40 samples for the study according to the guide: CLSI, EP09-A3. "
+            "4. Comparison test: a hypothesis test to compare the value of the means of the reference method vs the test method is carried out to establish whether under this test the methods can be considered interchangeable"
         )
     })
     
@@ -422,33 +422,20 @@ shinyServer(function(input, output, session) {
         withMathJax(
             tags$img(src="method_scoring.PNG"),
             br(),
-            "It is the first step (loading the data) to carry out the study of the comparison of methods, there are two possibilities:",
-            br(),
-            br(),
-            "1. Use the demo files which contain sample data to test the application, there are 3 possibilities: blood pressure, plasma and T4, these data were obtained from previous in vitro studies, with open data license and correspond with real world tests.",
-            br(),
-            "2. It is possible to load your own file (comma separated format) and it must contain a column called: “reference” for the standard or gold standard method and at least 1 or more columns with the methods test that will be compared in the following way: test_1 (for method the first method), test_2 (for the second method), always following the pattern test_n (where the n indicates the # of the comparison method), for illustration you can review the demo data option.",
-            br(),
-            br(),
-            "It is possible that the file has data such as ids, specimen or any other product of the study, however, what should always be kept are the columns: reference and test_n.
-            Once the file has been loaded, it will be possible to have the data displayed in a table that lists all the study data, it is not mandatory, but it is recommended to have at least 40 samples for the study according to the guide: CLSI, EP09-A3. "
+            "This is the third step in the study, automatically the software through a grid strategy will combine the test methods vs 
+            all available regression models (presented in step 2) and will calculate a ranking based on which test and regression method linear 
+            presents the best slope. The information will be presented in a table and the records will be presented in an orderly manner from top to bottom"
         )
+        
     })
     
     output$get_report_helper = renderUI({
         withMathJax(
             tags$img(src="method_comparison.PNG"),
             br(),
-            "It is the first step (loading the data) to carry out the study of the comparison of methods, there are two possibilities:",
-            br(),
-            br(),
-            "1. Use the demo files which contain sample data to test the application, there are 3 possibilities: blood pressure, plasma and T4, these data were obtained from previous in vitro studies, with open data license and correspond with real world tests.",
-            br(),
-            "2. It is possible to load your own file (comma separated format) and it must contain a column called: “reference” for the standard or gold standard method and at least 1 or more columns with the methods test that will be compared in the following way: test_1 (for method the first method), test_2 (for the second method), always following the pattern test_n (where the n indicates the # of the comparison method), for illustration you can review the demo data option.",
-            br(),
-            br(),
-            "It is possible that the file has data such as ids, specimen or any other product of the study, however, what should always be kept are the columns: reference and test_n.
-            Once the file has been loaded, it will be possible to have the data displayed in a table that lists all the study data, it is not mandatory, but it is recommended to have at least 40 samples for the study according to the guide: CLSI, EP09-A3. "
+            "Fourth and last step, once the best test method is known under the best linear regression model, an automatically generated 
+            report can be downloaded whose document will contain the details, support and conclusion of the analysis of the method comparison. 
+            It will be possible to download in PDF or HTML format."
         )
     })
     

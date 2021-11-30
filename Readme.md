@@ -12,7 +12,7 @@ This solution provides a graphical user interface for comparing methods.
 
 ## Bug reports         
 
-Bug reports and feature requests can be submitted through the [GitHub issues page](https://jasam.shinyapps.io/multi_method_comparison/issues)
+Bug reports and feature requests can be submitted through the [GitHub issues page](https://github.com/jasam/multi_method_comparison/issues)
 
 ## Contributors
 

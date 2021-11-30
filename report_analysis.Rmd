@@ -48,3 +48,7 @@ p
 4. shinydashboard: Create Dashboards with 'Shiny'. Version: `r packageDescription("shinydashboard")$Version` URL: http://rstudio.github.io/shinydashboard
 5. pander: An R Pandoc Writer. Version: `r packageDescription("pander")$Version` URL: http://rapporter.github.io/pander
 6. rmarkdown: Dynamic Documents for R. Version: `r packageDescription("rmarkdown")$Version` URL: http://rmarkdown.rstudio.com
+
+
+$Y=\beta _{0}+\beta _{1}X_{1}+\cdots +\beta _{m}X_{m}+\varepsilon }$
+
