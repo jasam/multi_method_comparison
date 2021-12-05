@@ -20,11 +20,16 @@ compareFit( fit.lr, fit.wlr )
 data(creatinine,package="mcr")
 x <- creatinine$serum.crea
 y <- creatinine$plasma.crea
-fit.lr = mcreg(x,y, method.reg="LinReg", na.rm=TRUE, identity = TRUE)
+fit.lr = mcreg(x,y, method.reg="WLinReg", method.ci = "jackknife", na.rm = TRUE)
 MCResult.plot(fit.lr, add.legend = FALSE, sub=" ")
-              
-
-
+printSummary(fit.lr)              
+fit.lr
+mcr::getCoefficients(fit.lr)[1]
+fit.lr@para[2,"LCI"]
+fit.lr@para[1,"SE"]
+fit.lr@para
+fit.lr
+?mcreg
 
 m1 <- mcreg(x,y,method.reg="Deming", mref.name="serum.crea",
             mtest.name="plasma.crea", na.rm=TRUE)
@@ -728,3 +733,16 @@ set.seed(1)
 p <- test.problem("ackley",10)
 o1 <- psoptim(p,control=list(trace=1,REPORT=50))
 show(o1)
+
+
+library(NCmisc)
+
+p = NCmisc::list.functions.in.file("server.R") 
+p
+
+knitr::write_bib(c("shiny", "shinydashboard", "data.table", "DT", "mcr", "dplyr", "plotly", "rmarkdown", "tinytex",
+                   "shinyBS", "purrr", "pander"), width = 60)
+
+
+#####
+

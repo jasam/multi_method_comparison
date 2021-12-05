@@ -3,52 +3,250 @@ title: "Multi Method Comparison"
 author: "Javier Rey"
 date: '`r Sys.Date()`'
 output: pdf_document
+toc: true
 ---
 
-```{r dataframe, comment = '', echo=FALSE, warning = FALSE, message = FALSE}
+### Dataset for comparison
+
+```{r load_data, comment = '', echo=FALSE, warning = FALSE, message = FALSE}
+data_loaded = data()
+n_points = nrow(data_loaded)
+label = names(which(dist_options == input$data_input_option))
+```
+- Dataset:`r label` \
+- Data points: `r n_points` 
+
+### Ranking: best test method and linear regression model
+
+Combination test methods vs regression model and its score is sort by better slope (near 1).
+
+```{r ranking, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
+methods = c("LinReg", "WLinReg", "Deming", "WDeming", "PaBa")
+# Columns for test methods
+column_names = names(data_loaded)
+cols_choice_method = sort(column_names[grepl("test", column_names)])
+
+slopes = c()
+models = c()
+intercepts = c()
+test_methods = c()
+slope_se = c()
+intercept_se = c()  
+
+for (test_method in cols_choice_method) {
+    
+    for (method in methods) {
+        x = data_loaded$reference
+        y = data_loaded %>% dplyr::select(!!test_method) %>% pull()
+        model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                           mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+        test_methods = c(test_methods, test_method)
+        slopes = c(slopes, round(mcr::getCoefficients(model)[2], digits=2))
+        intercepts = c(intercepts, round(mcr::getCoefficients(model)[1], digits=2))
+        intercept_se = c(intercept_se, round(model@para[1,"SE"], digits=2))
+        slope_se = c(slope_se, round(model@para[2,"SE"], digits=2))
+        method_aux = switch(method,
+                            "LinReg" = "Ordinary Least Squares",
+                            "WLinReg" = "Weighted Ordinary Least Squares",
+                            "Deming" = "Deming",
+                            "WDeming" = "Weighted Deming",
+                            "Passing-Bablok")
+        models = c(models, method_aux)
+    }
+}
+
+df_for_models = data.table(test_method = test_methods,
+                           slope = slopes,
+                           intercept = intercepts,
+                           regression_method = models,
+                           intercept_se = intercept_se,
+                           slope_se = slope_se)
+
+df_for_models$slope_diff = abs(1 - df_for_models$slope)
+df_for_models = df_for_models[order(df_for_models$slope_diff), ]
+df_for_models = df_for_models[, c("test_method", "regression_method", "slope", "intercept")]
+df_for_models = purrr::map_df(df_for_models, as.character)
+test_method_1 = df_for_models[1, "test_method"]$test_method
+model_1 = df_for_models[1, "regression_method"]$regression_method
+```
+
+```{r ranking_2, comment = '', echo=FALSE, warning = FALSE, message = FALSE}
+pander::pander(df_for_models)
+```
+
+### Summary for best test method:
+
+Acording to the above table: \
+
+- Test method: `r test_method_1` 
+- Linear regression: `r model_1`
+
+```{r dataframe, comment = '', echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
 library(mcr)
 
 data_loaded = data()
         
 methods = c("LinReg", "WLinReg", "Deming", "WDeming", "PaBa")
-
+        
 slopes = c()
 models = c()
 intercepts = c()
+ 
 for (method in methods) {
     x = data_loaded$reference
-    y = data_loaded %>% dplyr::select(!!input$method_list) %>% pull()
+    y = data_loaded %>% dplyr::select(test_method_1) %>% pull()
     model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
-                       mtest.name="Test", na.rm=TRUE)
+                       mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
     slopes = c(slopes, mcr::getCoefficients(model)[2])
     intercepts = c(intercepts, mcr::getCoefficients(model)[1])
-    models = c(models, method)
+    method_aux = switch(method,
+                        "LinReg" = "Ordinary Least Squares",
+                        "WLinReg" = "Weighted Ordinary Least Squares",
+                        "Deming" = "Deming",
+                        "WDeming" = "Weighted Deming",
+                        "Passing-Bablok")
+    models = c(models, method_aux)
 }
 df_for_models = data.frame(slope = slopes,
                            intercept = intercepts,
                            model = models)
 
 p = ggplot(data = data_loaded, aes(x = reference, y = y)) + 
-    geom_point() +
+    geom_point(colour = "black", fill = "white", shape = 21, stroke = 0.2) +
     geom_abline(data=df_for_models, mapping=aes(slope=slope, intercept=intercept, color=model)) +
     # Identity line
     geom_abline(slope=1, intercept=0, color="red") +
     labs(y=input$method_list) +
     theme_bw(base_size = 12)
+```
+
+```{r data_viz, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE}
 p
 ```
 
-#### Data is processed using R language^1^, shiny web application framework^2^ and mcr package^3^. Shinydashboard^4^and pander^5^ are used for website construction. Rmarkdown^6^ is used for converting results into PDF and HTML files.
+### Model Parameters linear models for best test method
+
+```{r data_param, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
+methods = c("LinReg", "WLinReg", "Deming", "WDeming", "PaBa")
+
+slopes = c()
+models = c()
+intercepts = c()
+data_points = c()
+confidence_level = c()
+intercept_interval = c()
+slope_interval = c()
+slope_se = c()
+intercept_se = c() 
+
+for (method in methods) {
+    x = data_loaded$reference
+    y = data_loaded %>% dplyr::select(test_method_1) %>% pull()
+    model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                       mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+    slopes = c(slopes, round(mcr::getCoefficients(model)[2], digits=2))
+    intercepts = c(intercepts, round(mcr::getCoefficients(model)[1], digits = 2))
+    method_aux = switch(method,
+                        "LinReg" = "Ordinary Least Squaress",
+                        "WLinReg" = "Weighted Ordinary Least Squares",
+                        "Deming" = "Deming",
+                        "WDeming" = "Weighted Deming",
+                        "Passing-Bablok")
+    models = c(models, method_aux)
+    data_points = c(data_points, nrow(model@data))
+    cl = paste0( ((1 - model@alpha) * 100 ), "%" )
+    confidence_level = c(confidence_level, cl)
+    ci_intercept = paste0("(", round(model@para[1,"LCI"], digits=2), " - ", round(model@para[1,"UCI"], digits=2), ")")
+    intercept_interval = c(intercept_interval, ci_intercept)
+    ci_slope = paste0("(", round(model@para[2,"LCI"], digits=2), " - ", round(model@para[2,"UCI"], digits=2), ")")
+    slope_interval = c(slope_interval, ci_slope)
+    intercept_se = c(intercept_se, round(model@para[1,"SE"], digits=2))
+    slope_se = c(slope_se, round(model@para[2,"SE"], digits=2))
+}
+
+df_for_models = data.frame(slope = slopes,
+                           intercept = intercepts,
+                           regression_method = models,
+                           intercept_interval = intercept_interval,
+                           slope_interval = slope_interval,
+                           intercept_se = intercept_se,
+                           slope_se = slope_se)
+
+df_for_models = df_for_models[, c("regression_method", "intercept", "intercept_se", "intercept_interval", 
+                                  "slope", "slope_se", "slope_interval")]
+
+df_for_models = purrr::map_df(df_for_models, as.character)
+```
+
+```{r data_viz_param, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE}
+pander::pander(df_for_models)
+```
+
+### Comparability best test method vs reference method
+
+```{r hypothesis, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
+x = data_loaded$reference
+y = data_loaded %>% dplyr::select(test_method_1) %>% pull()
+
+# Calc for hypothesis
+test_hypothesis = t.test(x = x, y = y, alternative = "two.sided", 
+                         conf.level = 1 - 0.05, paired = FALSE, var.equal = TRUE)
+```
+
+#### Hypothesis test
+$$ H_0 : \\u_1 - \\u_2 = 0 $$ $$ H_1 : \\u_1 - \\u_2 \ne 0 $$
+```{r, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
+h_0 = "$H_0$"
+```
+
+
+#### Conclusion \
+
+`r ifelse(test_hypothesis$p.value < 0.05, print(paste0("Reject ", h_0)), print(paste0("Do not reject ", h_0)))`
+
+#### Interpretation
+
+At the `r 0.05 * 100` % significance level `r ifelse(test_hypothesis$p.value < 0.05, print("we reject the null hypothesis that the true difference in means is"), print("we do not reject the null hypothesis that the true difference in means is"))` `r test_hypothesis$null.value` $$ p\\-value $$ `r ifelse(test_hypothesis$p.value < 0.001, print("< 0.001"), print(paste("=", round(test_hypothesis$p.value, 2))))`
+
+### Bland-Altman Visualization
+
+```{r, comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
+data_loaded$dif = ( data_loaded %>% dplyr::select(test_method_1) %>% pull() ) - data_loaded$reference
+        
+y_low = round(mean(data_loaded$dif, na.rm = TRUE) - sd(data_loaded$dif) * 2, digits = 2)
+y_up = round(mean(data_loaded$dif, na.rm = TRUE) + sd(data_loaded$dif) * 2, digits = 2)
+y_mean =  round(mean(data_loaded$dif, na.rm = TRUE), digits = 2)
+
+p = ggplot(data_loaded, aes(x = reference, y = dif)) +
+    geom_point(alpha = 0.5) +
+    geom_hline(yintercept = y_mean, colour = "blue", size = 0.5) +
+    geom_hline(yintercept = y_low, 
+               colour = "red", size = 0.5, linetype="dashed") +
+    geom_hline(yintercept = y_up, 
+               colour = "red", size = 0.5, linetype="dashed") +
+    theme_bw(base_size = 12) +
+    labs(title="Difference Plot", x="Reference Method", y="Test(y) - Reference(x)") 
+```        
+
+```{r comment = FALSE, echo=FALSE, warning = FALSE, message = FALSE}
+p
+```
+
+#### Data is processed using R language^1^, shiny web application framework^2^ and mcr package^3^. Shinydashboard^4^and pander^5^ are used for website construction.
 
 ##### References and packages:
 
-1. R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. Version: `r getRversion()` URL: https://www.R-project.org
-2. shiny: Web Application Framework for R. Version `r packageDescription("shiny")$Version` URL: http://CRAN.R-project.org/package=shiny
-3. mcr: Method Comparison Regression. Version: `r packageDescription("mcr")$Version` URL: http://CRAN.R-project.org/package=mcr
-4. shinydashboard: Create Dashboards with 'Shiny'. Version: `r packageDescription("shinydashboard")$Version` URL: http://rstudio.github.io/shinydashboard
-5. pander: An R Pandoc Writer. Version: `r packageDescription("pander")$Version` URL: http://rapporter.github.io/pander
-6. rmarkdown: Dynamic Documents for R. Version: `r packageDescription("rmarkdown")$Version` URL: http://rmarkdown.rstudio.com
-
-
-$Y=\beta _{0}+\beta _{1}X_{1}+\cdots +\beta _{m}X_{m}+\varepsilon }$
+1.  R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. Version: `r getRversion()` URL: <https://www.R-project.org>
+2.  shiny: Web Application Framework for R. Version `r packageDescription("shiny")$Version` URL: <http://CRAN.R-project.org/package=shiny>
+3.  mcr: Method Comparison Regression. Version: `r packageDescription("mcr")$Version` URL: <http://CRAN.R-project.org/package=mcr>
+4.  shinydashboard: Create Dashboards with 'Shiny'. Version: `r packageDescription("shinydashboard")$Version` URL: <http://rstudio.github.io/shinydashboard>
+5.  pander: An R Pandoc Writer. Version: `r packageDescription("pander")$Version` URL: <http://rapporter.github.io/pander>
+6.  rmarkdown: Dynamic Documents for R. Version: `r packageDescription("rmarkdown")$Version` URL: <http://rmarkdown.rstudio.com>
+7.  data.table: data.table: Extension of data.frame. Version: `r packageDescription("data.table")$Version` URL: <https://CRAN.R-project.org/package=data.table>
+8.  dplyr: A Grammar of Data Manipulation. Version: `r packageDescription("dplyr")$Version` URL: <https://CRAN.R-project.org/package=dplyr>
+9.  DT: A Wrapper of the JavaScript Library DataTables. Version: `r packageDescription("DT")$Version` URL: <https://github.com/rstudio/DT>
+10. plotly: Interactive Web-Based Data Visualization with R, plotly, and shiny. Version: `r packageDescription("plotly")$Version` URL: <https://plotly-r.com>
+11. purrr: Functional Programming Tools. Version: `r packageDescription("purrr")$Version` URL: <https://CRAN.R-project.org/package=purrr>
+12. shinyBS: Twitter Bootstrap Components for Shiny: `r packageDescription("shinyBS")$Version` URL: <https://ebailey78.github.io/shinyBS/>
+13. tinytex: Helper Functions to Install and Maintain TeX Live, and Compile LaTeX Documents: `r packageDescription("tinytex")$Version` URL: <https://github.com/yihui/tinytex/>
 

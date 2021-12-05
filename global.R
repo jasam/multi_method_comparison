@@ -3,20 +3,17 @@
 
 library(shiny)
 library(shinydashboard)
-library(shinydashboardPlus)
 library(data.table)
 library(DT)
 library(mcr)
 library(dplyr)
-library(rsconnect)
 library(plotly)
-library(pander)
 library(rmarkdown)
 library(tinytex)
 library(shinyBS)
-library(magrittr)
 library(purrr)
-library(knitr)
+library(pander)
+
 
 # Load data
 dt_BloodPressure = data.table::fread("./Data/df_SystBloodPressure.csv")
@@ -32,3 +29,9 @@ dt_t4 <<- dt_t4
 # List example data
 data_list = sort(c("BloodPressure", "T4", "Plasma"))
 data_list <<- data_list
+
+dist_options = c("Example Blood Pressure" = 1,
+                 "Example Plamas" = 2,
+                 "Example T4" = 3,
+                 "Upload file (CSV)" = 4)
+dist_options <<- dist_options

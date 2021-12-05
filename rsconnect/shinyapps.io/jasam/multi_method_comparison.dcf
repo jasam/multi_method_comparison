@@ -5,7 +5,7 @@ account: jasam
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5053308
-bundleId: 5310119
+bundleId: 5328471
 url: https://jasam.shinyapps.io/multi_method_comparison/
-when: 1638286210.88012
-lastSyncTime: 1638286210.88012
+when: 1638664679.24834
+lastSyncTime: 1638664679.24834
