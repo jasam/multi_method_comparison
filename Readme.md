@@ -20,7 +20,7 @@ The solution is deployed on shinyapps -> [Launch the app](https://jasam.shinyapp
 * Scoring using automatic selection best method and linear regression model.
 * Reporting on PDF or HTML with results.
 
-![Intro]("intro.PNG")
+![Intro]('intro.PNG')
 
 
 ## Framework for Measurement Procedure Comparison and Bias Estimation Using Patient Samples
