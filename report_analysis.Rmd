@@ -14,7 +14,8 @@ n_points = nrow(data_loaded)
 label = names(which(dist_options == input$data_input_option))
 ```
 - Dataset:`r label` \
-- Data points: `r n_points` 
+- Data points: `r n_points` \
+- Confidence Interval: 95% for all analysis where is required
 
 ### Ranking: best test method and linear regression model
 
@@ -63,7 +64,8 @@ df_for_models = data.table(test_method = test_methods,
                            slope_se = slope_se)
 
 df_for_models$slope_diff = abs(1 - df_for_models$slope)
-df_for_models = df_for_models[order(df_for_models$slope_diff), ]
+df_for_models$slope_error = abs(0 - df_for_models$slope_se)
+df_for_models = df_for_models[order(slope_diff, slope_error), ]
 df_for_models = df_for_models[, c("test_method", "regression_method", "slope", "intercept")]
 df_for_models = purrr::map_df(df_for_models, as.character)
 test_method_1 = df_for_models[1, "test_method"]$test_method

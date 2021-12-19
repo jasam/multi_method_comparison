@@ -39,7 +39,7 @@ shinyServer(function(input, output, session) {
     
     output$raw_data = DT::renderDataTable({
         
-        DT::datatable(data(), 
+        DT::datatable(data(), # Reactive context, data loaded using reactivity
                       options = list(lengthMenu=list(c(5,15,20), c('5','15','20')), pageLength=10,
                                      initComplete = JS("function(settings, json) {",
                                                        "$(this.api().table().header()).css({'background-color': 'moccasin', 'color': '1c1b1b'});",
@@ -324,7 +324,8 @@ shinyServer(function(input, output, session) {
                                    slope_se = slope_se)
         
         df_for_models$slope_diff = abs(1 - df_for_models$slope)
-        df_for_models = df_for_models[order(df_for_models$slope_diff), ]
+        df_for_models$slope_error = abs(0 - df_for_models$slope_se)
+        df_for_models = df_for_models[order(slope_diff, slope_error), ]
         df_for_models = df_for_models[, c("test_method", "regression_method", "slope", "slope_se", "intercept", "intercept_se")]
         df_for_models = purrr::map_df(df_for_models, as.character)
         DT::datatable(df_for_models,
@@ -396,7 +397,7 @@ shinyServer(function(input, output, session) {
             "It is the first step (loading the data) to carry out the study of the comparison of methods, there are two possibilities:",
             br(),
             br(),
-            "1. Use the demo files which contain sample data to test the application, there are 3 possibilities: blood pressure, plasma and T4, these data were obtained from previous in vitro studies, with open data license and correspond with real world tests.",
+            "1. Use the demo files which contain sample data to test the application, there are 3 possibilities: blood pressure, plasma and T4, these data were genarted using data simulation, with open data license and correspond with real world tests.",
             br(),
             "2. It is possible to load your own file (comma separated format) and it must contain a column called: “reference” for the standard or gold standard method and at least 1 or more columns with the methods test that will be compared in the following way: test_1 (for method the first method), test_2 (for the second method), always following the pattern test_n (where the n indicates the # of the comparison method), for illustration you can review the demo data option.",
             br(),
@@ -454,16 +455,40 @@ shinyServer(function(input, output, session) {
                  border-right:1px solid black;border-bottom: 1px solid black;color:black;text-align:center")
         
     })  
+    
     output$n_points_2 = renderUI({
         
         data_loaded = data()
         n_points = nrow(data_loaded)
         label = names(which(dist_options == input$data_input_option))
         shiny::p(paste("Dataset: ", label, " - Data points: ", n_points, ". ",
-                       "This step combine test methods vs regression model and its score is sort by better slope (near 1)."),
+                       "This step combine test methods vs regression model and its score is sort by better slope (near 1) and
+                        slope standard error (bias) near 0."),
                  style="padding:25px;background-color:papayawhip;border-left:8px solid coral;border-top: 1px solid black;
                  border-right:1px solid black;border-bottom: 1px solid black;color:black;text-align:center")
         
-    })   
+    }) 
+    
+    output$n_points_3 = renderUI({
+        
+        data_loaded = data()
+        data_for_plot = data_loaded
+        n_points = nrow(data_for_plot)
+        label = names(which(dist_options == input$data_input_option))
+        
+        # for Bland-Altman
+        data_for_plot$dif = ( data_for_plot %>% dplyr::select(!!input$method_list_2) %>% pull() ) - data_for_plot$reference
+        
+        y_low = round(mean(data_for_plot$dif, na.rm = TRUE) - sd(data_for_plot$dif) * 2, digits = 2)
+        y_up = round(mean(data_for_plot$dif, na.rm = TRUE) + sd(data_for_plot$dif) * 2, digits = 2)
+        y_mean =  round(mean(data_for_plot$dif, na.rm = TRUE), digits = 2)
+        points_outside = nrow(data_for_plot[dif < y_low | dif > y_up])
+        coverage = round(1 - (points_outside / nrow(data_loaded)), digits=2) * 100
+        shiny::p(paste("Dataset: ", label, " - Data points: ", n_points, ". ", "\n", "Points within limits: ", coverage, "%", "\n",
+                       "Bland-Altman: Suggest 95%."),
+                 style="padding:25px;background-color:papayawhip;border-left:8px solid coral;border-top: 1px solid black;
+                 border-right:1px solid black;border-bottom: 1px solid black;color:black;text-align:center")
+        
+    })  
     
 })

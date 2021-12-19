@@ -18,7 +18,7 @@ library(pander)
 # Load data
 dt_BloodPressure = data.table::fread("./Data/df_SystBloodPressure.csv")
 dt_Plasma = data.table::fread("./Data/df_PlasmaVolume.csv")
-names(dt_Plasma) = c("subject", "reference", "test_1")
+names(dt_Plasma) = c("subject", "reference", "test_1", "test_2")
 dt_t4 = data.table::fread("./Data/df_T4.csv")
 
 # Global reference
@@ -31,7 +31,8 @@ data_list = sort(c("BloodPressure", "T4", "Plasma"))
 data_list <<- data_list
 
 dist_options = c("Example Blood Pressure" = 1,
-                 "Example Plamas" = 2,
+                 "Example Plasma" = 2,
                  "Example T4" = 3,
                  "Upload file (CSV)" = 4)
 dist_options <<- dist_options
+
