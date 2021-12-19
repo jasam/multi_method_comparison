@@ -20,16 +20,13 @@ The solution is deployed on shinyapps -> [Launch the app](https://jasam.shinyapp
 * Scoring using automatic selection best method and linear regression model.
 * Reporting on PDF or HTML with results.
 
-![Intro]('intro.PNG')
-
-
 ## Framework for Measurement Procedure Comparison and Bias Estimation Using Patient Samples
 
 In the clinical measurement of in-vitro tests, comparison of a new measurement technique against an established one to see if they match enough as so that the new one replaces the previous one and it is possible to have a sustenance to affirm that the methods are interchangeable, a guide that standardizes and proposes good practices for these studies is: [CLSI-EP09-A3](https://clsi.org/standards/products/method-evaluation/documents/ep09/)
 
 ## Getting Help
 
-To ask a question about this app, please use the [email](jreyro@gmail.com).
+To ask a question about this app, please use the email -> jreyro@gmail.com
 
 ## Bug reports         
 
