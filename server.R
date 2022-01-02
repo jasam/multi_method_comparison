@@ -98,7 +98,7 @@ shinyServer(function(input, output, session) {
         data_for_plot = data()
         x = data_for_plot$reference
         y = data_for_plot %>% dplyr::select(!!input$method_list) %>% pull()
-        fit.lr = mcr::mcreg(x,y, method.reg="PaBa", na.rm=TRUE, method.ci = "jackknife")
+        fit.lr = mcr::mcreg(x,y, method.reg="PaBa", na.rm=TRUE, method.ci = "analytical")
         mcr::MCResult.plot(fit.lr, add.legend = FALSE, sub=" ")
         
     })
@@ -138,7 +138,7 @@ shinyServer(function(input, output, session) {
         
         x = dt_Plasma$reference
         y = dt_Plasma$test_1
-        fit.lr = mcr::mcreg(x,y, method.reg="PaBa", na.rm=TRUE, method.ci = "jackknife")
+        fit.lr = mcr::mcreg(x,y, method.reg="PaBa", na.rm=TRUE, method.ci = "analytical")
         printSummary(fit.lr)
     })
     
@@ -165,8 +165,15 @@ shinyServer(function(input, output, session) {
         for (method in methods) {
             x = data_loaded$reference
             y = data_loaded %>% dplyr::select(!!input$method_list) %>% pull()
-            model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
-                               mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+            if (method == "PaBa") {
+                model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                                   mtest.name="Test", na.rm=TRUE, method.ci = "analytical")
+            }
+            
+            else {
+                model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                                   mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+            }
             slopes = c(slopes, mcr::getCoefficients(model)[2])
             intercepts = c(intercepts, mcr::getCoefficients(model)[1])
             method_aux = switch(method,
@@ -213,8 +220,15 @@ shinyServer(function(input, output, session) {
         for (method in methods) {
             x = data_loaded$reference
             y = data_loaded %>% dplyr::select(!!input$method_list) %>% pull()
-            model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
-                               mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+            if (method == "PaBa") {
+                model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                                   mtest.name="Test", na.rm=TRUE, method.ci = "analytical")
+            }
+            
+            else {
+                model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                                   mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+            }
             slopes = c(slopes, round(mcr::getCoefficients(model)[2], digits=2))
             intercepts = c(intercepts, round(mcr::getCoefficients(model)[1], digits = 2))
             method_aux = switch(method,
@@ -299,8 +313,15 @@ shinyServer(function(input, output, session) {
             for (method in methods) {
                 x = data_loaded$reference
                 y = data_loaded %>% dplyr::select(!!test_method) %>% pull()
-                model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
-                                   mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+                if (method == "PaBa") {
+                    model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                                       mtest.name="Test", na.rm=TRUE, method.ci = "bootstrap")
+                }
+                
+                else {
+                    model = mcr::mcreg(x, y, method.reg=method, mref.name="Reference",
+                                       mtest.name="Test", na.rm=TRUE, method.ci = "jackknife")
+                }
                 test_methods = c(test_methods, test_method)
                 slopes = c(slopes, round(mcr::getCoefficients(model)[2], digits=2))
                 intercepts = c(intercepts, round(mcr::getCoefficients(model)[1], digits=2))
@@ -324,8 +345,8 @@ shinyServer(function(input, output, session) {
                                    slope_se = slope_se)
         
         df_for_models$slope_diff = abs(1 - df_for_models$slope)
-        df_for_models$slope_error = abs(0 - df_for_models$slope_se)
-        df_for_models = df_for_models[order(slope_diff, slope_error), ]
+        df_for_models$intercept_diff = abs(0 - df_for_models$intercept)
+        df_for_models = df_for_models[order(slope_diff, intercept_diff), ]
         df_for_models = df_for_models[, c("test_method", "regression_method", "slope", "slope_se", "intercept", "intercept_se")]
         df_for_models = purrr::map_df(df_for_models, as.character)
         DT::datatable(df_for_models,
@@ -463,7 +484,7 @@ shinyServer(function(input, output, session) {
         label = names(which(dist_options == input$data_input_option))
         shiny::p(paste("Dataset: ", label, " - Data points: ", n_points, ". ",
                        "This step combine test methods vs regression model and its score is sort by better slope (near 1) and
-                        slope standard error (bias) near 0."),
+                        intercept near 0."),
                  style="padding:25px;background-color:papayawhip;border-left:8px solid coral;border-top: 1px solid black;
                  border-right:1px solid black;border-bottom: 1px solid black;color:black;text-align:center")
         
